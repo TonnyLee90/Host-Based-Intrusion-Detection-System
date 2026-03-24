@@ -154,14 +154,6 @@ All settings are in `IDS/config.py`:
 
 ---
 
-## Output Files
-
-| File | Created by | Contents |
-|---|---|---|
-| `ids_baseline.json` | `baseline` command | Known-good SHA-256 hashes |
-| `ids_alerts.db` | First scan | SQLite alert database |
-
----
 
 ## Alert Severity Levels
 
@@ -178,7 +170,5 @@ All settings are in `IDS/config.py`:
 
 | Package | Used for | Without it |
 |---|---|---|
-| `psutil` | Process & port scanning | Falls back to subprocess |
-| `rich` | Colour terminal output | Falls back to plain print() |
 | `flask` | Web dashboard | Dashboard won't start |
 | `typer` | CLI commands | Required — must install |
