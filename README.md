@@ -112,7 +112,40 @@ echo tampered >> test_watch.txt
 # 4. Scan — should show a CRITICAL FILE_INTEGRITY alert
 python main.py scan
 ```
-
+## Adding Watched Files and Paths
+ 
+Open `IDS/config.py` and add your paths to the `WATCHED_FILES` list:
+ 
+```python
+WATCHED_FILES: list[str] = [
+    # Linux / macOS
+    "/etc/passwd",
+    "/etc/hosts",
+ 
+    # Windows (use raw strings to avoid backslash issues)
+    r"C:\Users\youruser\Documents\important.txt",
+ 
+    # Any file you want monitored
+    "/home/youruser/secret.conf",
+]
+```
+ 
+After adding new paths, **rebuild the baseline** so the new files get hashed:
+ 
+```bash
+python main.py baseline
+```
+ 
+> **Tip:** Always rebuild the baseline after changing `WATCHED_FILES`, otherwise the new files will never be compared against anything.
+ 
+---
+ 
+## Output Files
+ 
+| File | Created by | Contents |
+|---|---|---|
+| `ids_baseline.json` | `baseline` command | Known-good SHA-256 hashes |
+| `ids_alerts.db` | First scan | SQLite alert database |
 ---
 
 ## Project Structure
