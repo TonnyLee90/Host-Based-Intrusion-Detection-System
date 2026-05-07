@@ -1,12 +1,10 @@
-# File integrity
+# File integrity (watched files)
 WATCHED_FILES: list[str] = [
     # Linux
     "/etc/passwd",
     "/etc/shadow",   
     "/etc/hosts",     
     "/etc/sudoers",
-    # window
-    r"C:\Users\a1003\OneDrive\Desktop\testing.txt"
 ]
 
 # Path to the JSON file that stores the known-good SHA-256 hashes.
