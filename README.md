@@ -1,13 +1,6 @@
-# HIDS v2 — Host-Based Intrusion Detection System
+# Host-Based Intrusion Detection System on Linux (HIDS)
 
-A Python-based host intrusion detection system that monitors your local machine for signs of compromise across four pipeline layers: collection, detection, alerting, and output.
-
----
-
-## Requirements
-
-- Python 3.10+
-- pip
+A Python-based host intrusion detection system that monitors your local machine for signs of compromise.
 
 ---
 
@@ -15,53 +8,36 @@ A Python-based host intrusion detection system that monitors your local machine 
 
 **1. Clone the project**
 ```bash
-git clone https://github.com/yourname/hids.git
-cd hids
+git clone https://github.com/TonnyLee90/Host-Based-Intrusion-Detection-System.git
+cd Host-Based-Intrusion-Detection-System
 ```
 
-**2. Create a virtual environment (recommended)**
+**2. Create a virtual environment**
 
 Linux / macOS:
 ```bash
 python -m venv venv
 source venv/bin/activate
 ```
-
-Windows:
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
-
 **3. Install dependencies**
 ```bash
 pip install -r requirements.txt
 ```
-
 ---
 
 ## Quick Start
 
 ### Step 1 — Build the file-integrity baseline
-Run this **once** on a clean system before monitoring:
+Run this **once** on a clean system before monitoring
 
 Linux / macOS:
 ```bash
 sudo python main.py baseline
 ```
-
-Windows:
-```bash
-python main.py baseline
-```
-
-> **Note:** `sudo` is needed on Linux to read protected files like `/etc/shadow`. Unreadable files are skipped gracefully.
-
 ### Step 2 — Run a single scan
 ```bash
 python main.py scan
 ```
-
 ### Step 3 — Continuous monitoring
 ```bash
 python main.py monitor
@@ -88,33 +64,6 @@ Then open **http://localhost:5000** in a browser. JSON API available at `/api/al
 
 ---
 
-## Testing on Windows
-
-The default `WATCHED_FILES` paths (`/etc/passwd` etc.) are Linux-only. For Windows, add a local file to `IDS/config.py`:
-
-```python
-WATCHED_FILES: list[str] = [
-    r"C:\Users\youruser\Desktop\test_watch.txt",
-]
-```
-
-Then trigger an alert:
-```bash
-# 1. Create the test file
-echo original content > test_watch.txt
-
-# 2. Build baseline
-python main.py baseline
-
-# 3. Modify the file
-echo tampered >> test_watch.txt
-
-# 4. Scan — should show a CRITICAL FILE_INTEGRITY alert
-python main.py scan
-```
-
----
-
 ## Project Structure
 
 ```
@@ -136,11 +85,48 @@ hids/
     └── web_dashboard.py       Flask HTML dashboard
 ```
 
----
+```
+                        ┌─────────────────────┐
+                        │       main.py       │
+                        └─────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Layer 1 — Collectors                                           │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌────────────────┐ │
+│  │  File integrity  │  │   Log parser     │  │Process monitor │ │
+│  └──────────────────┘  └──────────────────┘  └────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+                │                │               │
+                └────────────────│───────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Layer 2 — Detection                                            │
+│                  ┌──────────────────────────┐                   │
+│                  │     Signature rules      │                   │
+│                  └──────────────────────────┘                   │
+└─────────────────────────────────────────────────────────────────┘
+                                 │
+                                 ▼
+                  ┌──────────────────────────┐
+                  │      Alert manager       │
+                  └──────────────────────────┘
+                                 │
+                ┌────────────────┼───────────────┐
+                ▼                ▼               ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Layer 3 — Output                                               │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌────────────────┐ │
+│  │   Terminal UI    │  │  Web dashboard   │  │File & database │ │
+│  └──────────────────┘  └──────────────────┘  └────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+```
 
+---
 ## Configuration
 
-All settings are in `IDS/config.py`:
+All settings are in `IDS/config.py`
 
 | Constant | Default | Description |
 |---|---|---|
@@ -170,7 +156,7 @@ All settings are in `IDS/config.py`:
 | `CRITICAL` | Watched file modified since baseline |
 | `HIGH` | Brute-force attempt, suspicious port or process |
 | `MEDIUM` | Watched file is now missing |
-| `LOW` | Reserved for future use |
+| `LOW` | informational alerts|
 
 ---
 
@@ -179,6 +165,5 @@ All settings are in `IDS/config.py`:
 | Package | Used for | Without it |
 |---|---|---|
 | `psutil` | Process & port scanning | Falls back to subprocess |
-| `rich` | Colour terminal output | Falls back to plain print() |
 | `flask` | Web dashboard | Dashboard won't start |
 | `typer` | CLI commands | Required — must install |
