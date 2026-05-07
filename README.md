@@ -1,6 +1,6 @@
 # Host-Based Intrusion Detection System on Linux (HIDS)
 
-A Python-based host intrusion detection system that monitors your local machine for signs of compromise.
+A Basic Python-based host intrusion detection system that monitors your local machine for signs of compromise.
 
 ---
 
@@ -64,27 +64,7 @@ Then open **http://localhost:5000** in a browser. JSON API available at `/api/al
 
 ---
 
-## Project Structure
-
-```
-hids/
-├── main.py                    CLI entry point (Typer)
-├── requirements.txt
-├── IDS/
-│   ├── config.py              All tunable constants
-│   ├── alert_manager.py       SQLite persistence + dedup
-│   └── scanner.py             Scan orchestrator
-├── collectors/                Layer 1 — gather raw telemetry
-│   ├── file_integrity.py      SHA-256 baseline + tamper detection
-│   ├── process_monitor.py     psutil process scan
-│   └── log_parser.py          Auth log + brute-force detection
-├── detections/                Layer 2 — classify findings
-│   └── signature_rules.py     Known-bad ports + process names
-└── output/                    Layer 3 — output channels
-    ├── terminal_ui.py         Rich colour-coded table
-    └── web_dashboard.py       Flask HTML dashboard
-```
-
+## Core Flow
 ```
                         ┌─────────────────────┐
                         │       main.py       │
