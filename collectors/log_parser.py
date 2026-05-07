@@ -1,36 +1,23 @@
-"""
-Authentication log parsing using re and open().
-
-Scans the log files listed in config.AUTH_LOG_PATHS for failed SSH password events.  
-Groups failures by source IP and flags any IP that breaches the brute-force threshold within the rolling time window.
-
-Public function:
-    collect_auth_logs() → list[dict]
-"""
-
+# Scans the log files listed in config.AUTH_LOG_PATHS for failed SSH password events.
 import re
 import time
 from collections import defaultdict
 import IDS.config as config
 
-#   "Failed password for root from 10.0.0.1 port 22 ssh2" 
-#   "Failed password for invalid user admin from 1.2.3.4 port 54321 ssh2"
+# "Failed password for root from 10.0.0.1 port 22 ssh2"
+# "Failed password for invalid user admin from 1.2.3.4 port 54321 ssh2"
 # Capture group 1 = source IP address.
 _FAILED_LOGIN_PATTERN = re.compile(
     r"Failed password for (?:invalid user )?\S+ from (\S+) port \d+"
 )
-
+# Scan authentication log files for brute-force login patterns.
+# Returns an empty list if no log files are readable or no threshold is breached.
 def collect_auth_logs() -> list[dict]:
-    """
-    Scan authentication log files for brute-force login patterns.
-    one per source IP that exceeded FAILED_LOGIN_THRESHOLD failures within FAILED_LOGIN_WINDOW_SECONDS.
-    Returns an empty list if no log files are readable or no threshold is breached.
-    """
     findings: list[dict] = []
     """
     failed_login_attempts = {"192.162.15.25" : "[12/30/2001-19:30, 12/30/2001-19:31, 12/30/2001-19:32]"}
-        - Key: (e.g., a username or an IP address from your logs).
-        - Value: A list of floats (e.g., timestamps of login failures).
+        - Key: (a username or an IP address from your logs).
+        - Value: A list of floats (timestamps of login failures).
     """
     for log_path in config.AUTH_LOG_PATHS:
         # defaultdict(list) does this behind the scenes 

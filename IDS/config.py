@@ -15,7 +15,6 @@ BASELINE_FILE: str = "ids_baseline.json"
 # Authentication log scanning
 AUTH_LOG_PATHS: list[str] = [
     "/var/log/auth.log",  # Debian / Ubuntu
-    "/var/log/secure",    # RHEL / CentOS / Fedora
 ]
 
 # Brute-force detection parameters.

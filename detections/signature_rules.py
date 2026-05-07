@@ -2,7 +2,7 @@
 Detection Engine
 Signature-based detection of known-bad patterns.
   Rule 1 — Suspicious listening TCP ports  (ss / netstat)
-  Rule 2 — New or modified setuid binaries (Linux only, find command)
+  Rule 2 — New or modified setuid binaries
 """
 import re
 import platform
@@ -41,18 +41,12 @@ def _check_suspicious_ports() -> list[dict]:
     Uses system commands (ss or netstat).
     """
     findings: list[dict] = []
-    OS = platform.system()
-    try:
-        if OS == "Linux":
-            # -t TCP, -l listening only, -n numeric, -p show process name
-            """
-            LISTEN 0 128 0.0.0.0:22    0.0.0.0:*    users:(("sshd",pid=123))
-            LISTEN 0 128 0.0.0.0:3306  0.0.0.0:*    users:(("mysqld",pid=456))
-            """
-            cmd = ["ss", "-tlnp"]
-        else:
-            # Windows: This retunrs network ports that are currently open and listening on the machine.
-            cmd = ["netstat", "-an"]
+        # -t TCP, -l listening only, -n numeric, -p show process name
+        """
+        LISTEN 0 128 0.0.0.0:22    0.0.0.0:*    users:(("sshd",pid=123))
+        LISTEN 0 128 0.0.0.0:3306  0.0.0.0:*    users:(("mysqld",pid=456))
+        """
+        cmd = ["ss", "-tlnp"]
 
         result = subprocess.run(
             cmd, capture_output=True, text=True, timeout=10
@@ -81,17 +75,11 @@ def _check_suspicious_ports() -> list[dict]:
 def _check_setuid_binaries() -> list[dict]:
     """
     Normally: you run program → it runs as YOU
-    With setuid: you run program → it runs as the FILE OWNER (often root)
-
+    With setuid: you run program → it runs as the file owner (often root)
     """
     findings: list[dict] = []
-
-    if platform.system() != "Linux":
-        return findings
-
     if not Path(BASELINE_FILE).exists():
         return findings
-
     try:
         result = subprocess.run(
             # -perm -4000 Find files that have the setuid permission enabled
@@ -99,16 +87,14 @@ def _check_setuid_binaries() -> list[dict]:
              ["find", "/usr/bin", "-perm", "-4000", "-newer", BASELINE_FILE],
             capture_output=True, text=True, timeout=10,
         )
-
         for suid_path in result.stdout.strip().splitlines():
-            if suid_path:   # Skip any empty lines
+            if suid_path:
                 findings.append({
                     "severity":  "CRITICAL",
                     "category":  "PRIVILEGE_ESCALATION",
                     "message":   f"New or modified setuid binary: {suid_path}",
                     "dedup_key": f"SUID:{suid_path}",
                 })
-
     except (FileNotFoundError, subprocess.TimeoutExpired):
         pass
 

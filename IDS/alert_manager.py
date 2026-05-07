@@ -1,13 +1,5 @@
 """
-Central alert dispatcher.  Every finding from every detection engine is
-routed through alert() here.
-
-Responsibilities:
-  1. Deduplicate — suppress repeat events within DEDUP_WINDOW_SECONDS.
-  2. Persist     — insert each unique alert into the SQLite database.
-  3. Log         — append a plain-text line to ids_alerts.log.
-  4. Emit        — print to stdout (Rich-coloured if available, else plain).
-  5. Buffer      — keep an in-memory list for the terminal UI summary.
+Every finding from every detection engine is routed through alert() here.
 """
 import sqlite3
 import threading
@@ -15,23 +7,19 @@ import time
 from datetime import datetime
 from IDS.config import DB_FILE, DEDUP_WINDOW_SECONDS
 
-# ── In-memory alert buffer (cleared at the start of each scan cycle) ──────────
 # The terminal UI reads this list to build its summary table.
 runtime_alerts: list[dict] = []
 
 # SQLite setup
 def _init_db() -> sqlite3.Connection:
-    """
-    Open (or create) the SQLite database and ensure the alerts table exists.
-    check_same_thread=False allows the multi-thread access
-    """
+    # Open or create the SQLite database and ensure the alerts table exists.
     conn = sqlite3.connect(DB_FILE, check_same_thread=False)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS alerts (
             id        INTEGER PRIMARY KEY AUTOINCREMENT,
             ts        TEXT NOT NULL,    -- ISO-8601 timestamp string
             severity  TEXT NOT NULL,    -- LOW / MEDIUM / HIGH / CRITICAL
-            category  TEXT NOT NULL,    -- e.g. FILE_INTEGRITY
+            category  TEXT NOT NULL,    -- FILE_INTEGRITY
             message   TEXT NOT NULL,    -- Human-readable description
             dedup_key TEXT              -- Fingerprint used for deduplication
         )

@@ -13,7 +13,7 @@ from collectors.file_integrity import build_baseline
 from output.web_dashboard import start_web_dashboard
 from IDS.config import MONITOR_INTERVAL_SECONDS
 
-app = typer.Typer(help="HIDS v2 — psutil · SQLite · Rich · Flask")
+app = typer.Typer(help="HIDS")
 
 @app.command()
 def scan():

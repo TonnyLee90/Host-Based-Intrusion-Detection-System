@@ -2,7 +2,7 @@
 Flask web dashboard.
 
 Provides a HTML page that auto-refreshes every 15 seconds,
-plus a /api/alerts JSON endpoint for programmatic access.
+plus a /api/alerts JSON endpoint
 """
 
 import threading
